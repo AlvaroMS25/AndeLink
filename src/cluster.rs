@@ -17,6 +17,9 @@ pub struct Cluster {
 }
 
 impl Cluster {
+    pub fn builder<H: EventHandler + 'static>(handler: H) -> ClusterBuilder {
+        ClusterBuilder::new(handler)
+    }
     fn new(builder: ClusterBuilder) -> Arc<Self> {
         let mut cluster = Arc::new(Self {
             event_handler: builder.event_handler,
