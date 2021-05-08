@@ -1,10 +1,10 @@
-mod types;
-mod error;
-mod node;
-mod model;
-mod events;
-mod cluster;
-mod builder;
+pub mod types;
+pub mod error;
+pub mod node;
+pub mod model;
+pub mod events;
+pub mod cluster;
+pub mod builder;
 
 #[cfg(feature = "util")]
-mod util;
+pub mod util;
