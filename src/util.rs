@@ -83,7 +83,7 @@ pub async fn disconnect_from(ctx: &Context, guild_id: impl Into<GuildId>) -> Uti
 
     let manager = match songbird::get(&ctx).await {
         Some(m) => m.clone(),
-        None => return Err(()),
+        None => return Err(UtilError::MissingSongbird),
     };
 
     let has_handler = manager.get(guild_id).is_some();
@@ -99,7 +99,6 @@ pub async fn disconnect_from(ctx: &Context, guild_id: impl Into<GuildId>) -> Uti
 
             lavalink_node.destroy(guild_id).await?;
 
-            Ok(())
         }
     }
 
@@ -122,9 +121,27 @@ impl std::fmt::Display for UtilError {
             Self::Songbird(why) => why.fmt(f),
             Self::Cluster(why) => why.fmt(f),
             Self::AndeLink(why) => why.fmt(f),
-            Self::MissingSongbird => write!("Missing songbird instance, be sure to install it before"),
+            Self::MissingSongbird => write!(f, "Missing songbird instance, be sure to install it before"),
         }
     }
 }
 
 impl std::error::Error for UtilError {}
+
+impl From<crate::error::ClusterError> for UtilError {
+    fn from(e: crate::error::ClusterError) -> UtilError {
+        UtilError::Cluster(e)
+    }
+}
+
+impl From<crate::error::AndelinkError> for UtilError {
+    fn from(e: crate::error::AndelinkError) -> UtilError {
+        UtilError::AndeLink(e)
+    }
+}
+
+impl From<songbird::error::JoinError> for UtilError {
+    fn from(e: songbird::error::JoinError) -> UtilError {
+        UtilError::Songbird(e)
+    }
+}
