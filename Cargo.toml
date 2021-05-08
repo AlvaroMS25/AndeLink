@@ -1,0 +1,43 @@
+[package]
+name = "andelink"
+version = "0.1.0"
+authors = ["AlvaroMS_25 <>"]
+edition = "2018"
+
+[features]
+default = []
+util = ["serenity/client", "serenity/cache", "serenity/gateway"]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+regex = "1"
+serde = "1"
+serde_json = "1"
+serde-aux = "0.6"
+futures = "0.3"
+http = "0.2"
+typemap_rev = "0.1"
+tracing = "0.1"
+tracing-futures = "0.2"
+tokio = { version = "1", features = ["rt", "sync"] }
+async-trait = "0.1"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+tokio-tungstenite = "0.13"
+dashmap = "4"
+parking_lot = "0.11"
+lazy_static = "1"
+
+[dependencies.serenity]
+git = "https://github.com/serenity-rs/serenity"
+branch = "current"
+default-features = false
+features=["model", "rustls_backend"]
+
+[dependencies.songbird]
+git = "https://github.com/serenity-rs/songbird/"
+branch = "current"
+default-features = false
+features = ["serenity-rustls"]
+
+[patch.crates-io]
+serenity = { git = "https://github.com/serenity-rs/serenity", branch = "current"}
