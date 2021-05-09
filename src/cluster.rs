@@ -176,7 +176,7 @@ impl ClusterBuilder {
         &self.data
     }
 
-    pub fn build(self) -> Arc<Cluster> {
+    pub fn build(self) -> ClusterResult<Arc<Cluster>> {
         Cluster::new(self)
     }
 }
