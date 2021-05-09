@@ -60,7 +60,7 @@ impl PlayParameters {
         let mut node_write = node.write().await;
 
         if let Some(player) = node_write.players.get_mut(&self.guild_id) {
-            player.queue.push(track.clone());
+            player.queue.push(track);
         } else {
             return Err(PlayerNotFound);
         }
