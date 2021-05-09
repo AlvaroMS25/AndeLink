@@ -22,7 +22,7 @@ impl Cluster {
     pub fn builder<H: EventHandler + 'static>(handler: H) -> ClusterBuilder {
         ClusterBuilder::new(handler)
     }
-    fn new(builder: ClusterBuilder) -> Arc<Self> {
+    fn new(builder: ClusterBuilder) -> ClusterResult<Arc<Self>> {
         let cluster = Arc::new(Self {
             event_handler: builder.event_handler,
             nodes: DashMap::new(),
@@ -37,16 +37,13 @@ impl Cluster {
         *cluster.self_ref.lock() = Some(clone);
 
         for node in builder.nodes {
-            let id = cluster.get_id();
-
-            let node = node.build(Arc::clone(&cluster), id);
-
-            UniversalNode::run(Arc::clone(&node));
-
-            cluster.nodes.insert(id, node);
+            cluster.add_node(|f| {
+                *f = node;
+                f
+            })?;
         }
 
-        cluster
+        Ok(cluster)
     }
 
     pub async fn get_best(&self) -> ClusterResult<Arc<UniversalNode>>{
@@ -129,7 +126,7 @@ impl Cluster {
 
         let node = builder.build(cluster, id);
 
-        UniversalNode::run(Arc::clone(&node));
+        UniversalNode::run(node);
 
         Ok(())
     }
