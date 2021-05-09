@@ -61,7 +61,7 @@ impl NodeBuilder {
         self
     }
 
-    pub(crate) fn build(mut self, cluster: Arc<Cluster>, shared: Arc<RwLock<TypeMap>>, node_id: u8) -> Arc<UniversalNode> {
+    pub(crate) fn build(mut self, cluster: Arc<Cluster>, node_id: u8) -> Arc<UniversalNode> {
         self.node_id = Some(node_id);
 
         assert!(self.node_id.is_some());

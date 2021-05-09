@@ -32,7 +32,7 @@ impl Cluster {
         for node in builder.nodes {
             let id = cluster.get_id();
 
-            let node = node.build(Arc::clone(&cluster), Arc::clone(&cluster.shared_data), id);
+            let node = node.build(Arc::clone(&cluster), id);
 
             UniversalNode::run(Arc::clone(&node));
 
