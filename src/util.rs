@@ -30,8 +30,8 @@ pub async fn is_on_same_vc(cache: impl AsRef<Cache>, guild: impl Into<GuildId>, 
         }
     };
 
-    if bot_channel.is_none() { return VoiceLocationState::ClientDisconnected }
-    if user_channel.is_none() { return VoiceLocationState::UserDisconnected }
+    if bot_channel.is_none() { return VoiceLocationState::ClientNotConnected }
+    if user_channel.is_none() { return VoiceLocationState::UserNotConnected }
 
     return if bot_channel.unwrap() == user_channel.unwrap() {
         VoiceLocationState::OnSameChannel
@@ -42,9 +42,9 @@ pub async fn is_on_same_vc(cache: impl AsRef<Cache>, guild: impl Into<GuildId>, 
 
 pub enum VoiceLocationState {
     /// The bot is not connected to any VC
-    ClientDisconnected,
-    /// The message author is not connected to any VC
-    UserDisconnected,
+    ClientNotConnected,
+    /// The specified user is not connected to any VC
+    UserNotConnected,
     /// Bot and message author are on the same VC
     OnSameChannel,
     /// Bot and message author are on different VC's
