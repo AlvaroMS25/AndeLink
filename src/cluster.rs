@@ -21,7 +21,7 @@ impl Cluster {
         ClusterBuilder::new(handler)
     }
     fn new(builder: ClusterBuilder) -> Arc<Self> {
-        let mut cluster = Arc::new(Self {
+        let cluster = Arc::new(Self {
             event_handler: builder.event_handler,
             nodes: DashMap::new(),
             reconnect_attempts: builder.reconnect_attempts,
