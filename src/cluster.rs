@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use parking_lot::Mutex;
 use typemap_rev::TypeMap;
 use crate::{builder::NodeBuilder, events::EventHandler, node::UniversalNode};
 use dashmap::DashMap;
@@ -14,6 +15,7 @@ pub struct Cluster {
     pub reconnect_attempts: u8,
     pub shared_data: Arc<RwLock<TypeMap>>,
     pub node_counter: AtomicU8,
+    pub self_ref: Mutex<Option<Arc<Self>>>
 }
 
 impl Cluster {
@@ -26,8 +28,13 @@ impl Cluster {
             nodes: DashMap::new(),
             reconnect_attempts: builder.reconnect_attempts,
             shared_data: Arc::new(RwLock::new(builder.data)),
-            node_counter: AtomicU8::new(0)
+            node_counter: AtomicU8::new(0),
+            self_ref: Mutex::new(None)
         });
+
+        let clone = Arc::clone(&cluster);
+
+        *cluster.self_ref.lock() = Some(clone);
 
         for node in builder.nodes {
             let id = cluster.get_id();
@@ -55,7 +62,7 @@ impl Cluster {
 
         let mut counts: HashMap<u8, u32> = HashMap::new();
         let mut min: Option<(u8, u32)> = None;
-        for /*(id, i)*/ item in self.nodes.iter() {
+        for item in self.nodes.iter() {
             counts.insert(item.key().clone(), item.value().read().await.players.len() as u32);
         }
 
@@ -99,6 +106,33 @@ impl Cluster {
         count += 1;
         count
     }
+
+    pub fn add_node<F>(&self, func: F) -> ClusterResult<()>
+    where
+        F: FnOnce(&mut NodeBuilder) -> &mut NodeBuilder
+    {
+        let mut builder = NodeBuilder::default();
+
+        func(&mut builder);
+
+        let id = self.get_id();
+
+        let cluster = {
+            let lock = self.self_ref.lock();
+
+            if let Some(c) = &*lock {
+                Arc::clone(&c)
+            } else {
+                return Err(ClusterError::MissingSelfRef)
+            }
+        };
+
+        let node = builder.build(cluster, id);
+
+        UniversalNode::run(Arc::clone(&node));
+
+        Ok(())
+    }
 }
 
 impl typemap_rev::TypeMapKey for Cluster {
@@ -124,7 +158,8 @@ impl ClusterBuilder {
 
     pub fn add_node<F>(&mut self, func: F) -> &mut Self
     where
-        F: FnOnce(&mut NodeBuilder) -> &mut NodeBuilder {
+        F: FnOnce(&mut NodeBuilder) -> &mut NodeBuilder
+    {
             let mut builder = NodeBuilder::default();
 
             func(&mut builder);
@@ -132,7 +167,7 @@ impl ClusterBuilder {
             self.nodes.push(builder);
 
             self
-        }
+    }
 
     pub fn reconnect_attempts(&mut self, attempts: u8) -> &mut Self {
         self.reconnect_attempts = attempts;

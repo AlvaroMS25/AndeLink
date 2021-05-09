@@ -1,10 +1,8 @@
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use crate::{
     cluster::Cluster,
     node::UniversalNode
 };
-use typemap_rev::TypeMap;
 
 pub struct NodeBuilder {
     pub(crate) host: String,

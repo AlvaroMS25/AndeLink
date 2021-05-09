@@ -60,6 +60,7 @@ pub type ClusterResult<T> = ::std::result::Result<T, ClusterError>;
 
 #[derive(Debug)]
 pub enum ClusterError {
+    MissingSelfRef,
     CannotFindNode,
     CannotFindBestNode,
     CannotAddNode,
@@ -73,6 +74,7 @@ impl Error for ClusterError {}
 impl Display for ClusterError {
     fn fmt(&self, f: &mut Formatter) -> Result {
         match self {
+            ClusterError::MissingSelfRef => write!(f, "Missing self arc reference to initialize the node"),
             ClusterError::CannotFindNode => write!(f, "Cannot find node, this can mean the node you're trying to search is not available or not exists"),
             ClusterError::CannotFindBestNode => write!(f, "Cannot find the best node, this is caused because there are no nodes added"),
             ClusterError::CannotAddNode => write!(f, "Cannot add node to cluster"),
