@@ -5,6 +5,7 @@ use serenity::{
     cache::Cache
 };
 use songbird::error::JoinResult;
+pub use songbird::SerenityInit;
 
 /// Check if the bot and the given user are on the same vc
 pub async fn is_on_same_vc(cache: impl AsRef<Cache>, guild: impl Into<GuildId>, user: impl Into<UserId>) -> VoiceLocationState {
