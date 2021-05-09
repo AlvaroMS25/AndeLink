@@ -6,6 +6,7 @@ use serenity::{
 };
 use songbird::error::JoinResult;
 
+/// Check if the bot and the given user are on the same vc
 pub async fn is_on_same_vc(cache: impl AsRef<Cache>, guild: impl Into<GuildId>, user: impl Into<UserId>) -> VoiceLocationState {
     let cache = cache.as_ref();
     let user_id = user.into();
@@ -49,6 +50,7 @@ pub enum VoiceLocationState {
     OnDifferentChannel
 }
 
+/// Connect to a voice channel
 pub async fn connect_to(ctx: &Context, guild: impl Into<GuildId>, channel: impl Into<ChannelId>) -> UtilResult<()> {
     let guild_id = guild.into();
 
@@ -78,6 +80,7 @@ pub async fn connect_to(ctx: &Context, guild: impl Into<GuildId>, channel: impl 
 
 }
 
+/// Disconnect from a voice channel
 pub async fn disconnect_from(ctx: &Context, guild_id: impl Into<GuildId>) -> UtilResult<()> {
     let guild_id = guild_id.into();
 
@@ -103,6 +106,39 @@ pub async fn disconnect_from(ctx: &Context, guild_id: impl Into<GuildId>) -> Uti
     }
 
     Ok(())
+}
+
+/// Check if the client is connected to any voice channel
+pub async fn client_is_connected(ctx: &Context, msg: &Message) -> bool {
+    let bot_id = ctx.cache.current_user_id().await;
+
+    return match msg.guild(&ctx.cache).await {
+        None => false,
+        Some(g) => {
+            if let Some(_) = g.voice_states.get(&bot_id).and_then(|vs| vs.channel_id) {
+                true
+            } else {
+                false
+            }
+        }
+    };
+}
+
+/// Check if message author is connected to any voice channel
+pub async fn user_is_connected(ctx: &Context, msg: &Message) -> bool {
+    let user_channel = match msg.guild(&ctx.cache).await {
+        None => None,
+        Some(guild) => {
+            guild.voice_states.get(&msg.author.id)
+                .and_then(|vs| vs.channel_id)
+        }
+    };
+
+    return if let Some(_) = user_channel {
+        true
+    } else {
+        false
+    }
 }
 
 type UtilResult<T> = Result<T, UtilError>;
