@@ -496,24 +496,22 @@ impl UniversalNode {
 
     /// Constructor for playing a track.
     pub fn play(&self, guild_id: impl Into<DiscordGuildId>, track: Track) -> PlayParameters {
-        let mut p = PlayParameters::default();
+        let mut p = PlayParameters::default(&self);
         p.track = track;
         p.guild_id = guild_id.into().0;
         p
     }
 
     /// Constructor shortcut to add entire playlists to queue, **map** will be called for every track converted to play parameters
-    pub fn play_playlist<F>(&self, guild: impl Into<DiscordGuildId>, tracks: Vec<Track>, map: F) -> Vec<PlayParameters>
+    pub fn play_playlist<'a, F>(&'a self, guild: impl Into<DiscordGuildId>, tracks: Vec<Track>, map: F) -> Vec<PlayParameters<'a>>
     where
-        F: Fn(&mut PlayParameters) -> &mut PlayParameters
+        F: for<'b> Fn(&'b mut PlayParameters<'a>) -> &'b mut PlayParameters<'a>
     {
         let guild = guild.into();
         let mut playlist = Vec::new();
 
         for track in tracks {
-            let mut p = PlayParameters::default();
-            p.track = track;
-            p.guild_id = guild.0;
+            let mut p = self.play(guild, track);
 
             map(&mut p);
 

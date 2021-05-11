@@ -2,18 +2,16 @@ use serenity::{
     model::id::ChannelId as DiscordChannelId
 };
 use super::track::Track;
-use crate::error::AndelinkResult;
+use crate::error::{AndelinkResult, AndelinkError};
 use std::{
     time::Duration,
-    sync::Arc
 };
 use crate::node::UniversalNode;
 use crate::error::AndelinkError::PlayerNotFound;
 use super::track::TrackRequester;
-use crate::types::WebSocketConnection;
 
-#[derive(Default)]
-pub struct PlayParameters {
+pub struct PlayParameters<'a> {
+    node: &'a UniversalNode,
     pub track: Track,
     pub replace: bool,
     pub start: u64,
@@ -23,9 +21,28 @@ pub struct PlayParameters {
     pub channel: Option<DiscordChannelId>
 }
 
-impl PlayParameters {
+impl<'a> PlayParameters<'a> {
+
+    //Create a new play parameters object
+    pub fn default(node: &'a UniversalNode) -> Self {
+        Self {
+            node,
+            track: Default::default(),
+            replace: Default::default(),
+            start: Default::default(),
+            finish: Default::default(),
+            guild_id: Default::default(),
+            requester: Default::default(),
+            channel: Default::default()
+        }
+    }
+
     /// Starts playing the track.
-    pub async fn start(self, socket: &mut WebSocketConnection) -> AndelinkResult<()> {
+    pub async fn start(self) -> AndelinkResult<()> {
+        let mut write = self.node.write().await;
+
+        let socket = if let Some(stream) = &mut write.socket_write { stream } else { return Err(AndelinkError::NoWebsocket) };
+
         let payload = crate::model::events::Play {
             track: self.track.track,
             no_replace: !self.replace,
@@ -39,9 +56,9 @@ impl PlayParameters {
         Ok(())
     }
 
-    pub async fn queue(self, node: Arc<UniversalNode>) -> AndelinkResult<()> {
+    pub async fn queue(self) -> AndelinkResult<()> {
         let should_start = {
-            let node_read = node.read().await;
+            let node_read = self.node.read().await;
             if let Some(player) = node_read.players.get(&self.guild_id) {
                 player.now_playing.is_none() && player.queue.len() == 0
             } else {
@@ -57,7 +74,7 @@ impl PlayParameters {
             channel: self.channel
         };
 
-        let mut node_write = node.write().await;
+        let mut node_write = self.node.write().await;
 
         if let Some(player) = node_write.players.get_mut(&self.guild_id) {
             player.queue.push(track);
