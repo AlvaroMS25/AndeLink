@@ -26,13 +26,13 @@ lazy_static!(
 );
 
 pub struct UniversalNode {
-    inner: Arc<RwLock<NodeInner>>,
+    inner: RwLock<NodeInner>,
     http: HttpClient,
     rest_url: String
 }
 
 impl std::ops::Deref for UniversalNode {
-    type Target = Arc<RwLock<NodeInner>>;
+    type Target = RwLock<NodeInner>;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
@@ -307,7 +307,7 @@ impl UniversalNode {
         let rest = inner.rest.clone();
 
         Arc::new(Self {
-            inner: Arc::new(RwLock::new(inner)),
+            inner: RwLock::new(inner),
             http: http_client,
             rest_url: rest
         })
