@@ -345,7 +345,7 @@ impl UniversalNode {
 
                     actual_reconnection_attempt = 1;
 
-                    Self::add_to_cluster(Arc::clone(&cluster), node_id, Arc::clone(&node));
+                    Self::add_to_cluster(&cluster, node_id, Arc::clone(&node));
 
                     {
                         let mut node_write = node.write().await;
@@ -447,20 +447,27 @@ impl UniversalNode {
                             _ => ()
                         }
                     }
+
+                    // Temporarily delete the node from cluster so we won't try to play anithing on it until reconnect
+                    if cluster.nodes.contains_key(&node_id) {
+                        info!("Temporarily removing node id {} from cluster due to disconnection", node_id);
+
+                        Self::remove_from_cluster(&cluster, node_id);
+                    }
                 }
             }
 
-            Self::remove_from_cluster(cluster, node_id);
+            Self::remove_from_cluster(&cluster, node_id);
         });
     }
 
-    fn remove_from_cluster(cluster: Arc<Cluster>, id: u8) {
+    fn remove_from_cluster(cluster: &Arc<Cluster>, id: u8) {
         cluster.nodes.remove(&id);
 
         info!("Node id {} removed from cluster successfully", id);
     }
 
-    fn add_to_cluster(cluster: Arc<Cluster>, id: u8, node: Arc<Self>) {
+    fn add_to_cluster(cluster: &Arc<Cluster>, id: u8, node: Arc<Self>) {
         cluster.nodes.insert(id, node);
 
         info!("Node id {} added to cluster successfully", id);
