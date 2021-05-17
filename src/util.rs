@@ -66,13 +66,13 @@ pub async fn connect_to(ctx: &Context, guild: impl Into<GuildId>, channel: impl 
 
     match handler {
         Ok(conn_info) => {
-            let lavalink_cluster = {
+            let cluster = {
                 let data = ctx.data.read().await;
                 data.get::<crate::cluster::Cluster>().expect("Unable to find andelink cluster").clone()
             };
-            let lavalink_node = lavalink_cluster.get_best().await?;
+            let node = cluster.get_best().await?;
 
-            lavalink_node.create_session(&guild_id, &conn_info).await?;
+            node.create_session(&guild_id, &conn_info).await?;
         },
         Err(why) => return Err(UtilError::Songbird(why))
     }
@@ -97,11 +97,11 @@ pub async fn disconnect_from(ctx: &Context, guild_id: impl Into<GuildId>) -> Uti
 
         {
             let data = ctx.data.read().await;
-            let lavalink_cluster = data.get::<crate::cluster::Cluster>().expect("Unable to find andelink cluster").clone();
+            let cluster = data.get::<crate::cluster::Cluster>().expect("Unable to find andelink cluster").clone();
 
-            let lavalink_node = lavalink_cluster.get_player_node(guild_id.clone().0).await?;
+            let node = cluster.get_player_node(guild_id.clone().0).await?;
 
-            lavalink_node.destroy(guild_id).await?;
+            node.destroy(guild_id).await?;
 
         }
     }

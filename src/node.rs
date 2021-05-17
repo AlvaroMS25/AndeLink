@@ -58,7 +58,7 @@ pub struct NodeInner {
 impl NodeInner {
     fn default(cluster: Arc<Cluster>, builder: NodeBuilder) -> Self {
         let mut headers = HeaderMap::new();
-        headers.insert("Authorization", builder.pass.clone().parse().expect("Failed parsing lavalink password"));
+        headers.insert("Authorization", builder.pass.clone().parse().expect("Failed parsing audio server password"));
         headers.insert("Num-Shards", builder.shards.to_string().parse().expect("Failed parsing user shards"));
         headers.insert("User-Id", builder.id.clone().unwrap().to_string().parse().expect("Failed parsing userid"));
 
@@ -327,7 +327,7 @@ impl UniversalNode {
             let max_reconnect_attempts = cluster.reconnect_attempts;
 
             while !(actual_reconnection_attempt > max_reconnect_attempts) {
-                info!("Node id {} trying to connect to lavalink, attempt {}", node_id, actual_reconnection_attempt);
+                info!("Node id {} trying to connect to server, attempt {}", node_id, actual_reconnection_attempt);
 
                 let url = node.read().await.get_ws_request();
 
@@ -336,12 +336,12 @@ impl UniversalNode {
                 if let Err(_) = stream {
                     actual_reconnection_attempt += 1;
 
-                    warn!("Node id {} failed to reconnect to lavalink (attempt {}/{}), waiting 5s before reconnecting", node_id, actual_reconnection_attempt - 1, max_reconnect_attempts);
+                    warn!("Node id {} failed to reconnect to server (attempt {}/{}), waiting 5s before reconnecting", node_id, actual_reconnection_attempt - 1, max_reconnect_attempts);
                     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
                 } else {
                     let (write, mut read) = stream.unwrap().0.split();
 
-                    info!("Node id {} connected successfully to lavalink server", node_id);
+                    info!("Node id {} connected successfully to server", node_id);
 
                     actual_reconnection_attempt = 1;
 
