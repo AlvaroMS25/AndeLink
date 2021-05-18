@@ -457,6 +457,8 @@ impl UniversalNode {
                 }
             }
 
+            // If node reaches max attempts, exit the task and remove it from cluster
+            info!("Node id {} reached max connection attempts, removing from cluster and disconnecting", node_id);
             Self::remove_from_cluster(&cluster, node_id);
         });
     }

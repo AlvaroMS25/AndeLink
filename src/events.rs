@@ -28,27 +28,27 @@ pub(crate) fn process(node: Arc<UniversalNode>, handler: Arc<dyn EventHandler>, 
     match event_type {
         EventType::Stats(e) => {
             tokio::spawn(async move {
-                handler.stats(Arc::clone(&node), e).await;
+                handler.stats(node, e).await;
             });
         },
         EventType::PlayerUpdate(e) => {
             tokio::spawn(async move {
-                handler.player_update(Arc::clone(&node), e).await;
+                handler.player_update(node, e).await;
             });
         },
         EventType::TrackStart(e) => {
             tokio::spawn(async move {
-                handler.track_start(Arc::clone(&node), e).await;
+                handler.track_start(node, e).await;
             });
         },
         EventType::TrackFinish(e) => {
             tokio::spawn(async move {
-                handler.track_finish(Arc::clone(&node), e).await;
+                handler.track_finish(node, e).await;
             });
         },
         EventType::WebSocketClosed(e) => {
             tokio::spawn(async move {
-                handler.socket_closed(Arc::clone(&node), e).await;
+                handler.socket_closed(node, e).await;
             });
         }
     }
